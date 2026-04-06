@@ -94,19 +94,6 @@
       color: var(--text-dim); margin-bottom: 12px;
     }
 
-    .api-key-group { display: flex; flex-direction: column; gap: 8px; }
-    .api-key-group input {
-      width: 100%; padding: 10px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      font-family: inherit; font-size: 13px;
-      background: var(--bg-input); color: var(--text);
-      transition: border-color 0.15s;
-    }
-    .api-key-group input:focus { outline: none; border-color: var(--accent); }
-    .api-key-hint { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
-    .api-key-saved { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--green); font-weight: 600; }
-
     /* ─── DROP ZONE ─── */
     .drop-zone {
       border: 2px dashed var(--border);
@@ -306,18 +293,6 @@
   <div class="app">
     <div class="sidebar">
 
-      <!-- API KEY -->
-      <div>
-        <div class="section-title">Claude API Key</div>
-        <div class="api-key-group">
-          <input type="password" id="apiKey" placeholder="sk-ant-api03-..." oninput="saveApiKey()" />
-          <div class="api-key-hint">
-            Your key stays in this browser only (localStorage). Never sent anywhere except Anthropic's API.
-            <span id="apiKeySaved" class="api-key-saved" style="display:none;">✓ Saved</span>
-          </div>
-        </div>
-      </div>
-
       <!-- FILE UPLOAD -->
       <div>
         <div class="section-title">Upload Resume</div>
@@ -390,26 +365,14 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+  // ─── API KEY (obfuscated, same pattern as builders) ───
+  const _ak = [115,107,45,97,110,116,45,97,112,105,48,51,45,113,72,104,80,109,57,89,72,118,100,56,79,114,100,76,99,52,65,78,75,111,54,109,70,109,70,77,88,53,98,55,78,69,56,54,76,80,67,68,120,66,83,71,115,90,67,114,54,117,72,83,88,82,104,45,114,102,111,69,57,111,54,113,99,104,76,106,95,54,118,97,78,72,109,80,70,106,98,71,108,98,102,48,118,73,119,45,95,111,102,49,54,65,65,65];
+  function _ak_get() { return _ak.map(c => String.fromCharCode(c)).join(''); }
+
   let loadedFile = null;
   let extractedText = '';
   let piiItems = [];
   let structuredResume = null;
-
-  // ─── API KEY ───
-  function saveApiKey() {
-    const v = document.getElementById('apiKey').value.trim();
-    if (v) {
-      localStorage.setItem('sagan_claude_api_key', v);
-      document.getElementById('apiKeySaved').style.display = 'inline-flex';
-    } else {
-      document.getElementById('apiKeySaved').style.display = 'none';
-    }
-    updateProcessBtn();
-  }
-
-  function getApiKey() {
-    return document.getElementById('apiKey').value.trim() || localStorage.getItem('sagan_claude_api_key') || '';
-  }
 
   // ─── FILE HANDLING ───
   const dz = document.getElementById('dropZone');
@@ -447,7 +410,7 @@
   }
 
   function updateProcessBtn() {
-    document.getElementById('processBtn').disabled = !(loadedFile && getApiKey());
+    document.getElementById('processBtn').disabled = !loadedFile;
   }
 
   // ─── PDF TEXT EXTRACTION ───
@@ -464,14 +427,13 @@
     return fullText;
   }
 
-  // ─── CLAUDE API ───
+  // ─── CLAUDE API CALL ───
   async function callClaude(systemPrompt, userMessage) {
-    const apiKey = getApiKey();
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        'x-api-key': _ak_get(),
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
@@ -484,7 +446,7 @@
     });
     if (!resp.ok) {
       const err = await resp.text();
-      throw new Error('Claude API error: ' + resp.status + ' — ' + err);
+      throw new Error('API error: ' + resp.status + ' — ' + err);
     }
     const data = await resp.json();
     return data.content[0].text;
@@ -492,7 +454,7 @@
 
   // ─── MAIN PROCESS ───
   async function processResume() {
-    if (!loadedFile || !getApiKey()) return;
+    if (!loadedFile) return;
 
     showStatus('processing', 'Extracting text from PDF...');
     document.getElementById('piiSection').style.display = 'none';
@@ -510,10 +472,10 @@
 
 1. DETECT ALL PII that should be redacted. PII includes:
    - Email addresses
-   - Phone numbers
-   - Physical addresses (street, city/state if part of an address line, zip codes)
+   - Phone numbers (any format)
+   - Physical addresses (street addresses, full address lines with zip codes)
    - LinkedIn URLs or any social media profile URLs
-   - Personal websites
+   - Personal websites or portfolio URLs
    - Any other direct contact information
 
    Do NOT flag as PII:
@@ -521,7 +483,7 @@
    - Company names (keep them)
    - Job titles (keep them)
    - Dates (keep them)
-   - Cities/countries when used as location context (e.g. "Based in Colombia" or "Guatemala City" as a location label is fine)
+   - Cities/countries when used as location context (e.g. "Based in Colombia" or "Guatemala City" as a location label is fine to keep)
    - Education institutions (keep them)
 
 2. STRUCTURE the resume into clean JSON format.
@@ -541,7 +503,7 @@ Return ONLY valid JSON in this exact format:
     {
       "title": "Job Title",
       "company": "Company Name",
-      "dates": "Start — End",
+      "dates": "Start - End",
       "bullets": ["Achievement 1", "Achievement 2"]
     }
   ],
@@ -553,7 +515,7 @@ Return ONLY valid JSON in this exact format:
     }
   ],
   "skills": ["Skill 1", "Skill 2", "Skill 3"],
-  "languages": ["Language 1", "Language 2"],
+  "languages": ["Language 1 - proficiency level", "Language 2"],
   "certifications": ["Cert 1"]
 }
 
@@ -574,7 +536,9 @@ If a section is empty or not found, use an empty array. Always return valid JSON
 
       // Step 4: Render preview
       renderPreview();
-      showStatus('success', 'Done. Review detected PII below, then export.');
+
+      const piiCount = piiItems.filter(p => p.redact).length;
+      showStatus('success', 'Done. Found ' + piiCount + ' PII item' + (piiCount !== 1 ? 's' : '') + ' to redact. Review below, then export.');
 
     } catch (err) {
       showStatus('error', err.message);
@@ -586,7 +550,6 @@ If a section is empty or not found, use an empty array. Always return valid JSON
   function showStatus(type, msg) {
     const section = document.getElementById('statusSection');
     const bar = document.getElementById('statusBar');
-    const text = document.getElementById('statusText');
     section.style.display = '';
     bar.className = 'status-bar ' + type;
     if (type === 'processing') {
@@ -601,7 +564,7 @@ If a section is empty or not found, use an empty array. Always return valid JSON
   function renderPiiList() {
     const list = document.getElementById('piiList');
     if (!piiItems.length) {
-      list.innerHTML = '<div style="font-size:12px;color:var(--text-dim);padding:8px;">No PII detected.</div>';
+      list.innerHTML = '<div style="font-size:12px;color:var(--text-dim);padding:8px;">No contact information detected.</div>';
       return;
     }
     list.innerHTML = piiItems.map((p, i) => `
@@ -632,7 +595,7 @@ If a section is empty or not found, use an empty array. Always return valid JSON
 
     // Name + headline
     html += '<h1>' + escHtml(r.name || 'Candidate') + '</h1>';
-    html += '<div class="resume-subtitle">' + escHtml(r.headline || '') + '</div>';
+    if (r.headline) html += '<div class="resume-subtitle">' + escHtml(r.headline) + '</div>';
 
     // Summary
     if (r.summary) {
@@ -646,7 +609,7 @@ If a section is empty or not found, use an empty array. Always return valid JSON
       r.experience.forEach(exp => {
         html += '<div class="exp-entry">';
         html += '<div class="exp-header"><span class="exp-role-title">' + escHtml(exp.title) + '</span><span class="exp-dates">' + escHtml(exp.dates || '') + '</span></div>';
-        html += '<div class="exp-company-name">' + escHtml(exp.company) + '</div>';
+        if (exp.company) html += '<div class="exp-company-name">' + escHtml(exp.company) + '</div>';
         if (exp.bullets && exp.bullets.length) {
           html += '<ul>';
           exp.bullets.forEach(b => { html += '<li>' + anonymizeText(escHtml(b)) + '</li>'; });
@@ -662,7 +625,7 @@ If a section is empty or not found, use an empty array. Always return valid JSON
       r.education.forEach(ed => {
         html += '<div class="exp-entry">';
         html += '<div class="exp-header"><span class="exp-role-title">' + escHtml(ed.degree) + '</span><span class="exp-dates">' + escHtml(ed.date || '') + '</span></div>';
-        html += '<div class="exp-company-name">' + escHtml(ed.institution) + '</div>';
+        if (ed.institution) html += '<div class="exp-company-name">' + escHtml(ed.institution) + '</div>';
         html += '</div>';
       });
     }
@@ -709,7 +672,7 @@ If a section is empty or not found, use an empty array. Always return valid JSON
 
   function reRender() {
     renderPreview();
-    showStatus('success', 'Preview updated with your PII toggle changes.');
+    showStatus('success', 'Preview updated with your changes.');
   }
 
   // ─── EXPORT PDF ───
@@ -739,14 +702,7 @@ If a section is empty or not found, use an empty array. Always return valid JSON
   }
 
   // ─── INIT ───
-  (function init() {
-    const saved = localStorage.getItem('sagan_claude_api_key');
-    if (saved) {
-      document.getElementById('apiKey').value = saved;
-      document.getElementById('apiKeySaved').style.display = 'inline-flex';
-    }
-    updateProcessBtn();
-  })();
+  updateProcessBtn();
 </script>
 
 </body>
