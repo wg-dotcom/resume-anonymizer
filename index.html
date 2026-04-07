@@ -479,7 +479,7 @@
    - Any other direct contact information
 
    Do NOT flag as PII:
-   - The person's name (keep it)
+   - The person's name (keep it, but return ONLY their first name in the "name" field — drop last name, middle name, suffixes)
    - Company names (keep them)
    - Job titles (keep them)
    - Dates (keep them)
@@ -490,7 +490,7 @@
 
 Return ONLY valid JSON in this exact format:
 {
-  "name": "Full Name",
+  "name": "First Name Only",
   "headline": "One-line professional headline",
   "pii": [
     { "type": "email", "value": "person@email.com" },
