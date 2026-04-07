@@ -213,50 +213,110 @@
       min-height: 1000px;
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-lg);
-      padding: 56px 52px;
+      padding: 0;
       font-size: 14px;
       line-height: 1.7;
       color: #3d4f5f;
+      overflow: hidden;
+    }
+
+    /* ─── RESUME HEADER BAND ─── */
+    .resume-header {
+      background: var(--teal);
+      padding: 44px 52px 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .resume-header::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(245,184,0,0.08);
+    }
+    .resume-header::after {
+      content: '';
+      position: absolute; bottom: -60px; right: 80px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.03);
+    }
+    .resume-header-brand {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 24px;
+      position: relative; z-index: 1;
+    }
+    .resume-header-brand img { height: 16px; filter: brightness(0) invert(1); opacity: 0.5; }
+    .resume-header-brand span {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 9px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.35);
     }
     .resume-preview h1 {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 32px; font-weight: 700;
-      color: var(--teal);
-      margin-bottom: 6px;
+      font-size: 34px; font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
       letter-spacing: -0.02em;
+      position: relative; z-index: 1;
     }
     .resume-subtitle {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 14px; color: var(--text-mid); font-weight: 500;
-      margin-bottom: 28px;
-      padding-bottom: 20px;
-      border-bottom: 2px solid var(--teal);
+      font-size: 15px; color: rgba(255,255,255,0.65); font-weight: 400;
+      position: relative; z-index: 1;
+      line-height: 1.5;
     }
+    .resume-header-accent {
+      width: 48px; height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin-top: 20px;
+      position: relative; z-index: 1;
+    }
+
+    /* ─── RESUME BODY ─── */
+    .resume-body {
+      padding: 40px 52px 52px;
+    }
+
     .resume-section-title {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 11px; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.14em;
       color: var(--teal);
-      margin: 32px 0 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border-light);
+      margin: 36px 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+      display: flex; align-items: center; gap: 8px;
     }
-    .resume-preview p { margin-bottom: 12px; color: var(--text-mid); }
+    .resume-section-title:first-child { margin-top: 0; }
+
+    .resume-preview p { margin-bottom: 12px; color: #556b72; line-height: 1.75; }
     .resume-preview ul { padding-left: 20px; margin-bottom: 12px; }
-    .resume-preview li { margin-bottom: 8px; color: var(--text-mid); }
-    .exp-entry { margin-bottom: 22px; }
+    .resume-preview li { margin-bottom: 8px; color: #556b72; line-height: 1.65; }
+    .resume-preview li::marker { color: var(--accent); }
+    .exp-entry { margin-bottom: 26px; }
     .exp-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
     .exp-role-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: var(--teal); font-size: 15px; }
-    .exp-dates { font-size: 12px; color: var(--text-dim); font-weight: 500; }
-    .exp-company-name { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+    .exp-dates {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px; color: var(--accent-text);
+      font-weight: 600; letter-spacing: 0.02em;
+      background: rgba(245,184,0,0.12); padding: 3px 10px;
+      border-radius: var(--radius-pill);
+    }
+    .exp-company-name { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; font-weight: 500; }
     .skills-tags { display: flex; flex-wrap: wrap; gap: 8px; }
     .skill-tag {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 11px; font-weight: 600;
-      padding: 6px 14px; border-radius: var(--radius-pill);
-      background: var(--teal-light); color: var(--teal);
+      padding: 7px 16px; border-radius: var(--radius-pill);
+      background: var(--teal); color: #ffffff;
       letter-spacing: 0.01em;
     }
+    .skill-tag:nth-child(3n+2) { background: var(--accent); color: var(--teal); }
+    .skill-tag:nth-child(5n+3) { background: transparent; color: var(--teal); border: 1.5px solid var(--teal); }
     .redacted {
       background: var(--red);
       color: white;
@@ -276,8 +336,8 @@
       margin-top: 48px;
       padding-top: 20px;
       border-top: 1px solid var(--border-light);
-      opacity: 0.5;
-      letter-spacing: 0.03em;
+      opacity: 0.4;
+      letter-spacing: 0.05em;
     }
 
     /* ─── PRINT STYLES ─── */
@@ -286,7 +346,9 @@
       .topbar, .sidebar { display: none !important; }
       .app { display: block; height: auto; }
       .preview-area { padding: 0; background: white; }
-      .resume-preview { box-shadow: none; border-radius: 0; max-width: 100%; padding: 32px 40px; }
+      .resume-preview { box-shadow: none; border-radius: 0; max-width: 100%; overflow: visible; }
+      .resume-header { padding: 32px 40px 28px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .resume-body { padding: 28px 40px 32px; }
       .watermark { display: none; }
     }
 
@@ -616,9 +678,16 @@ If a section is empty or not found, use an empty array. Always return valid JSON
 
     let html = '';
 
-    // Name + headline
+    // Header band
+    html += '<div class="resume-header">';
+    html += '<div class="resume-header-brand"><img src="https://saganrecruitment.com/wp-content/uploads/2025/10/Sagan-Logo-2-e1759568299542.png" alt="Sagan" /><span>Resume Anonymizer</span></div>';
     html += '<h1>' + escHtml(r.name || 'Candidate') + '</h1>';
     if (r.headline) html += '<div class="resume-subtitle">' + escHtml(r.headline) + '</div>';
+    html += '<div class="resume-header-accent"></div>';
+    html += '</div>';
+
+    // Body
+    html += '<div class="resume-body">';
 
     // Summary
     if (r.summary) {
@@ -677,7 +746,8 @@ If a section is empty or not found, use an empty array. Always return valid JSON
       html += '</ul>';
     }
 
-    html += '<div class="watermark">Anonymized by Sagan Passport · Resume Anonymizer</div>';
+    html += '<div class="watermark">Anonymized by Sagan · Resume Anonymizer</div>';
+    html += '</div>'; // close .resume-body
 
     preview.innerHTML = html;
   }
