@@ -677,9 +677,9 @@ If a section is empty or not found, use an empty array. Always return valid JSON
 
   // ─── EXPORT PDF ───
   function exportPDF() {
-    const name = structuredResume ? structuredResume.name || 'Resume' : 'Resume';
+    const name = structuredResume ? structuredResume.name || 'Candidate' : 'Candidate';
     const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_');
-    document.title = cleanName + '_Anonymized';
+    document.title = cleanName + '_Resume';
     window.print();
     setTimeout(() => { document.title = 'Resume Anonymizer — Sagan Passport'; }, 1000);
   }
